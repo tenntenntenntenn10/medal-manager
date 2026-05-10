@@ -673,14 +673,21 @@
   }
 
   // ===== Auth flow =====
-  async function initAuth() {
-    const hash = localStorage.getItem(PC_HASH_KEY);
-    if (!hash) {
+  // async にしない：await を使わないため、同期関数で十分
+  function initAuth() {
+    try {
+      const hash = localStorage.getItem(PC_HASH_KEY);
+      if (!hash) {
+        showLockView('setup');
+      } else if (sessionStorage.getItem(PC_AUTH_KEY) === '1') {
+        showApp();
+      } else {
+        showLockView('entry');
+      }
+    } catch (e) {
+      // localStorage が使えない環境（プライベートブラウズ制限など）への対応
+      console.error('[medal-app] initAuth error:', e);
       showLockView('setup');
-    } else if (sessionStorage.getItem(PC_AUTH_KEY) === '1') {
-      showApp();
-    } else {
-      showLockView('entry');
     }
   }
 
@@ -693,19 +700,25 @@
     if (view === 'setup') {
       setupEl.classList.remove('hidden');
       entryEl.classList.add('hidden');
-      setTimeout(() => document.getElementById('pc-setup-1').focus(), 200);
+      setTimeout(() => document.getElementById('pc-setup-1')?.focus(), 200);
     } else {
       setupEl.classList.add('hidden');
       entryEl.classList.remove('hidden');
-      setTimeout(() => document.getElementById('pc-entry').focus(), 200);
+      setTimeout(() => document.getElementById('pc-entry')?.focus(), 200);
     }
   }
 
   function showApp() {
     document.getElementById('lock-screen').style.display = 'none';
-    document.getElementById('app').style.display         = '';
-    loadData();
-    render();
+    // ★ 修正: '' にすると CSS の #app { display:none } が復活して白画面になる
+    //         必ず 'block' を明示する
+    document.getElementById('app').style.display = 'block';
+    try {
+      loadData();
+      render();
+    } catch (e) {
+      console.error('[medal-app] showApp error:', e);
+    }
   }
 
   async function setupPasscode() {
