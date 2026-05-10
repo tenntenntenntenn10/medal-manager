@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>貯メダル管理</title>
+
+  <!-- Safari ホーム画面追加・PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="貯メダル">
+  <meta name="theme-color" content="#1a1a2e">
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html { height: 100%; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif;
+      background: #f0f2f5;
+      color: #333;
+      min-height: 100%;
+    }
+
+    button {
+      touch-action: manipulation;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    /* ===== Lock Screen ===== */
+    #lock-screen {
+      position: fixed;
+      inset: 0;
+      background: #1a1a2e;
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: max(32px, env(safe-area-inset-top)) 24px
+               max(32px, env(safe-area-inset-bottom));
+    }
+
+    .lock-view { width: 100%; max-width: 340px; text-align: center; }
+    .lock-view.hidden { display: none; }
+
+    .lock-icon  { font-size: 56px; display: block; margin-bottom: 16px; }
+    .lock-title { font-size: 24px; font-weight: 700; color: white; margin-bottom: 6px; }
+    .lock-sub   {
+      font-size: 14px;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+
+    .pc-input {
+      width: 100%;
+      padding: 18px 14px;
+      border: 2px solid rgba(255,255,255,0.15);
+      border-radius: 14px;
+      font-size: 22px;
+      text-align: center;
+      letter-spacing: 8px;
+      background: rgba(255,255,255,0.08);
+      color: white;
+      margin-bottom: 12px;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+      display: block;
+      font-family: inherit;
+    }
+    .pc-input::placeholder {
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 2px;
+      font-size: 16px;
+    }
+    .pc-input:focus {
+      border-color: rgba(233,69,96,0.7);
+      background: rgba(255,255,255,0.12);
+    }
+
+    .pc-error {
+      font-size: 13px;
+      color: #ff7b7b;
+      min-height: 22px;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .pc-btn {
+      width: 100%;
+      padding: 17px;
+      border: none;
+      border-radius: 14px;
+      font-size: 17px;
+      font-weight: 700;
+      background: #e94560;
+      color: white;
+      min-height: 56px;
+      touch-action: manipulation;
+    }
+    .pc-btn:active { background: #c8334f; }
+
+    .pc-hint {
+      margin-top: 28px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.22);
+      line-height: 1.9;
+    }
+
+    @keyframes pc-shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-9px); }
+      40%, 80% { transform: translateX(9px); }
+    }
+    .pc-shake { animation: pc-shake 0.38s ease-in-out; }
+
+    /* ===== App wrapper ===== */
+    #app { display: none; }
+
+    /* ===== Header ===== */
+    header {
+      background: #1a1a2e;
+      color: white;
+      padding-top: max(14px, env(safe-area-inset-top));
+      padding-bottom: 14px;
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    }
+    header h1 { font-size: 17px; font-weight: 700; }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    #header-count { font-size: 12px; opacity: 0.55; }
+
+    .lock-btn {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.65);
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 15px;
+      line-height: 1;
+      min-height: 36px;
+      min-width: 36px;
+    }
+    .lock-btn:active { background: rgba(255,255,255,0.2); }
+
+    /* ===== Main ===== */
+    main {
+      padding: 14px;
+      padding-left: max(14px, env(safe-area-inset-left));
+      padding-right: max(14px, env(safe-area-inset-right));
+      padding-bottom: max(32px, calc(16px + env(safe-area-inset-bottom)));
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    /* ===== 店舗追加ボタン ===== */
+    .btn-add-store {
+      width: 100%;
+      padding: 17px;
+      background: #e94560;
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+    .btn-add-store:active { background: #c8334f; }
+
+    /* ===== 合計バー ===== */
+    .total-bar {
+      background: #16213e;
+      color: white;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .t-label { font-size: 11px; opacity: 0.55; margin-bottom: 2px; }
+    .t-val-large { font-size: 26px; font-weight: 800; }
+    .t-val-right { text-align: right; }
+    .t-val-small { font-size: 16px; font-weight: 700; }
+
+    /* ===== 店舗カード ===== */
+    .store-card {
+      background: white;
+      border-radius: 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      overflow: hidden;
+    }
+
+    .card-main { padding: 18px 16px 12px; }
+
+    .card-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #555;
+      margin-bottom: 4px;
+      word-break: break-all;
+    }
+
+    .card-medal-row {
+      display: flex;
+      align-items: baseline;
+      gap: 5px;
+      margin-bottom: 8px;
+    }
+    .card-medals {
+      font-size: 54px;
+      font-weight: 800;
+      color: #e94560;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -1px;
+    }
+    .card-medals-unit {
+      font-size: 20px;
+      font-weight: 600;
+      color: #ddd;
+    }
+
+    .card-cashout {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #fffbeb;
+      border: 1.5px solid #fde68a;
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #92400e;
+    }
+
+    .card-brief {
+      padding: 0 16px 14px;
+      font-size: 13px;
+      color: #888;
+      line-height: 1.75;
+    }
+    .card-brief .brief-key {
+      font-size: 10px;
+      font-weight: 700;
+      color: #ccc;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-right: 4px;
+    }
+
+    /* ===== メインアクションボタン ===== */
+    .card-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      border-top: 1px solid #f3f3f3;
+    }
+
+    .act-btn {
+      padding: 14px 6px;
+      border: none;
+      border-right: 1px solid #f3f3f3;
+      background: white;
+      font-weight: 700;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      min-height: 68px;
+      justify-content: center;
+    }
+    .act-btn:last-child { border-right: none; }
+    .act-btn:active { background: #f5f5f5; }
+    .act-icon  { font-size: 22px; line-height: 1; }
+    .act-label { font-size: 12px; }
+
+    .act-btn.plus  { color: #2e7d32; }
+    .act-btn.minus { color: #c62828; }
+    .act-btn.setv  { color: #1565c0; }
+
+    /* ===== 詳細トグル ===== */
+    .card-toggle-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+      padding: 12px;
+      background: #fafafa;
+      border-top: 1px solid #f0f0f0;
+      font-size: 13px;
+      color: #aaa;
+      font-weight: 500;
+      user-select: none;
+    }
+    .card-toggle-row:active { background: #efefef; }
+    .toggle-chevron { display: inline-block; transition: transform 0.2s; }
+    .toggle-chevron.open { transform: rotate(180deg); }
+
+    /* ===== 詳細エリア ===== */
+    .card-detail {
+      display: none;
+      padding: 16px;
+      background: #f9f9f9;
+      border-top: 1px solid #efefef;
+    }
+    .card-detail.open { display: block; }
+
+    .detail-rows {
+      font-size: 14px;
+      color: #555;
+      line-height: 2.1;
+      margin-bottom: 14px;
+    }
+    .detail-rows .dk {
+      font-size: 10px;
+      font-weight: 700;
+      color: #bbb;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-right: 6px;
+    }
+
+    .sub-btns { display: flex; gap: 8px; }
+    .sub-btn {
+      flex: 1;
+      padding: 13px 8px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      min-height: 48px;
+    }
+    .sub-btn:active { opacity: 0.75; }
+    .sub-btn-edit   { background: #ede7f6; color: #4527a0; }
+    .sub-btn-delete { background: #fce4ec; color: #b71c1c; }
+
+    /* ===== モーダル ===== */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 200;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .overlay.open { display: flex; }
+
+    .modal {
+      background: white;
+      width: 100%;
+      max-width: 560px;
+      border-radius: 22px 22px 0 0;
+      padding: 0 18px max(24px, env(safe-area-inset-bottom));
+      max-height: 92vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .modal-drag {
+      width: 38px;
+      height: 5px;
+      background: #e0e0e0;
+      border-radius: 3px;
+      margin: 14px auto 0;
+    }
+
+    .modal-body { padding: 18px 0 6px; }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 20px;
+    }
+
+    .form-group { margin-bottom: 16px; }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #aaa;
+      margin-bottom: 7px;
+      letter-spacing: 0.3px;
+    }
+
+    /* Safariはフォントサイズ16px未満でズームする → 必ず16px以上 */
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 14px;
+      border: 2px solid #eee;
+      border-radius: 12px;
+      font-size: 16px;
+      color: #222;
+      outline: none;
+      font-family: inherit;
+      background: #fafafa;
+      -webkit-appearance: none;
+      appearance: none;
+      transition: border-color 0.15s;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: #e94560;
+      background: white;
+    }
+    .form-group textarea { resize: none; height: 88px; }
+
+    .form-hint { font-size: 12px; color: #ccc; margin-top: 5px; }
+
+    .mc-box {
+      background: #fff0f3;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .mc-label { font-size: 12px; color: #f4879a; font-weight: 700; margin-bottom: 2px; }
+    .mc-value { font-size: 38px; font-weight: 800; color: #e94560; line-height: 1; }
+
+    .modal-btns {
+      display: flex;
+      gap: 10px;
+      margin-top: 22px;
+      padding-bottom: 4px;
+    }
+    .mbtn-save {
+      flex: 2;
+      padding: 17px;
+      background: #e94560;
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-size: 17px;
+      font-weight: 700;
+      min-height: 56px;
+    }
+    .mbtn-save:active { background: #c8334f; }
+    .mbtn-cancel {
+      flex: 1;
+      padding: 17px;
+      background: #f0f0f0;
+      color: #888;
+      border: none;
+      border-radius: 14px;
+      font-size: 16px;
+      min-height: 56px;
+    }
+    .mbtn-cancel:active { background: #e0e0e0; }
+
+    /* ===== Empty state ===== */
+    .empty {
+      text-align: center;
+      padding: 64px 20px;
+      color: #ccc;
+    }
+    .empty .e-icon { font-size: 56px; margin-bottom: 14px; }
+    .empty p { font-size: 15px; }
+    .empty .sub { font-size: 13px; margin-top: 8px; color: #ddd; }
+  </style>
+</head>
+<body>
+
+<!-- =====================================================
+     パスコードロック画面
+     ===================================================== -->
+<div id="lock-screen">
+
+  <!-- 初回：パスコード設定 -->
+  <div id="view-setup" class="lock-view hidden">
+    <span class="lock-icon">🔐</span>
+    <div class="lock-title">パスコードを設定</div>
+    <div class="lock-sub">4〜8桁の数字を設定してください</div>
+
+    <input type="password" id="pc-setup-1" class="pc-input"
+           inputmode="numeric" pattern="[0-9]*" maxlength="8"
+           placeholder="パスコード" autocomplete="new-password">
+    <input type="password" id="pc-setup-2" class="pc-input"
+           inputmode="numeric" pattern="[0-9]*" maxlength="8"
+           placeholder="パスコード（確認）" autocomplete="new-password">
+    <div class="pc-error" id="setup-error"></div>
+    <button class="pc-btn" onclick="setupPasscode()">設定する</button>
+  </div>
+
+  <!-- 2回目以降：パスコード入力 -->
+  <div id="view-entry" class="lock-view hidden">
+    <span class="lock-icon">🎰</span>
+    <div class="lock-title">貯メダル管理</div>
+    <div class="lock-sub">パスコードを入力してください</div>
+
+    <input type="password" id="pc-entry" class="pc-input"
+           inputmode="numeric" pattern="[0-9]*" maxlength="8"
+           placeholder="パスコード" autocomplete="current-password">
+    <div class="pc-error" id="entry-error"></div>
+    <button class="pc-btn" onclick="verifyPasscode()">ロック解除</button>
+
+    <div class="pc-hint">
+      パスコードを忘れた場合：<br>
+      Safari設定 → プライバシーとセキュリティ →<br>
+      詳細なWebサイトデータ → このサイトを削除<br>
+      ※ 保存データもすべて削除されます
+    </div>
+  </div>
+
+</div>
+
+<!-- =====================================================
+     メインアプリ（認証後に表示）
+     ===================================================== -->
+<div id="app">
+
+  <header>
+    <h1>🎰 貯メダル管理</h1>
+    <div class="header-right">
+      <span id="header-count"></span>
+      <button class="lock-btn" onclick="logout()" title="ロック">🔒</button>
+    </div>
+  </header>
+
+  <main>
+    <button class="btn-add-store" onclick="openStoreModal(null)">＋ 新しい店舗を追加</button>
+
+    <div class="total-bar">
+      <div>
+        <div class="t-label">全店舗 合計メダル</div>
+        <div class="t-val-large" id="total-medals">0枚</div>
+      </div>
+      <div class="t-val-right">
+        <div class="t-label">換金目安合計</div>
+        <div class="t-val-small" id="total-cash">—</div>
+      </div>
+    </div>
+
+    <div id="store-list"></div>
+  </main>
+
+</div><!-- /#app -->
+
+<!-- ===== 店舗追加 / 編集モーダル ===== -->
+<div class="overlay" id="store-modal" onclick="overlayClick(event,'store-modal')">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="modal-body">
+      <div class="modal-title" id="store-modal-title">店舗を追加</div>
+
+      <div class="form-group">
+        <label>店名（必須）</label>
+        <input type="text" id="sf-name" placeholder="例：マルハン〇〇店" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label id="sf-medals-label">初期メダル枚数</label>
+        <input type="number" id="sf-medals" placeholder="0" min="0"
+               inputmode="numeric" pattern="[0-9]*">
+      </div>
+      <div class="form-group">
+        <label>貸出枚数（1,000円で何枚）</label>
+        <input type="number" id="sf-lend" placeholder="例：46" min="0" step="0.1"
+               inputmode="decimal">
+        <div class="form-hint">1,000円で何枚借りられるか</div>
+      </div>
+      <div class="form-group">
+        <label>交換枚数（1,000円に何枚必要）</label>
+        <input type="number" id="sf-exchange" placeholder="例：52.7" min="0" step="0.1"
+               inputmode="decimal">
+        <div class="form-hint">換金目安の自動計算に使用します</div>
+      </div>
+      <div class="form-group">
+        <label>再プレイ上限</label>
+        <input type="text" id="sf-replay" placeholder="例：460枚 / 無制限">
+      </div>
+      <div class="form-group">
+        <label>メモ</label>
+        <textarea id="sf-memo" placeholder="例：ジャグラー強め / 青い会員カード"></textarea>
+      </div>
+
+      <div class="modal-btns">
+        <button class="mbtn-cancel" onclick="closeModal('store-modal')">キャンセル</button>
+        <button class="mbtn-save"   onclick="saveStore()">保存する</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== メダル更新モーダル ===== -->
+<div class="overlay" id="medal-modal" onclick="overlayClick(event,'medal-modal')">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="modal-body">
+      <div class="modal-title" id="medal-modal-title">メダルを増やす</div>
+
+      <div class="mc-box">
+        <div>
+          <div class="mc-label">現在の枚数</div>
+          <div class="mc-value" id="mc-current">0枚</div>
+        </div>
+        <span style="font-size:32px">🎰</span>
+      </div>
+
+      <div class="form-group">
+        <label id="mf-amount-label">枚数</label>
+        <input type="number" id="mf-amount" placeholder="例：500" min="0"
+               inputmode="numeric" pattern="[0-9]*">
+      </div>
+      <div class="form-group">
+        <label>最終利用メモ（任意）</label>
+        <input type="text" id="mf-memo" placeholder="例：マイジャグで+500枚" autocomplete="off">
+      </div>
+
+      <div class="modal-btns">
+        <button class="mbtn-cancel" onclick="closeModal('medal-modal')">キャンセル</button>
+        <button class="mbtn-save"   onclick="updateMedals()">更新する</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ====================================================================
+  // 【セキュリティに関する注記】
+  // このパスコードロックは簡易的な「目隠し」機能です。
+  // パスコードのSHA-256ハッシュをlocalStorageに保存し、
+  // 認証状態をsessionStorageで管理しています。
+  // 本格的なサーバーサイド認証ではなく、端末内のデータを
+  // 完全に保護するものではありません。
+  // ソースコードやlocalStorageに直接アクセスできる環境では
+  // 突破される可能性があります。
+  // ====================================================================
+
+  // ===== Passcode constants =====
+  const PC_HASH_KEY = 'medal_pc_hash';
+  const PC_AUTH_KEY = 'medal_authed';
+  const PC_SALT     = 'medal-lock-app-v1'; // ハッシュ強化用の固定ソルト
+
+  // パスコードをSHA-256でハッシュ化（Web Crypto API）
+  // GitHub Pages (HTTPS) では常に利用可能
+  async function hashPasscode(code) {
+    if (crypto?.subtle) {
+      const data = new TextEncoder().encode(code + PC_SALT);
+      const buf  = await crypto.subtle.digest('SHA-256', data);
+      return Array.from(new Uint8Array(buf))
+        .map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    // file:// 等の非セキュアコンテキスト向けフォールバック
+    return 'v0:' + [...(code + PC_SALT)]
+      .reduce((h, c) => (Math.imul(31, h) + c.charCodeAt(0)) | 0, 0)
+      .toString(16);
+  }
+
+  // ===== Auth flow =====
+  async function initAuth() {
+    const hash = localStorage.getItem(PC_HASH_KEY);
+    if (!hash) {
+      showLockView('setup');
+    } else if (sessionStorage.getItem(PC_AUTH_KEY) === '1') {
+      showApp();
+    } else {
+      showLockView('entry');
+    }
+  }
+
+  function showLockView(view) {
+    document.getElementById('lock-screen').style.display = 'flex';
+    document.getElementById('app').style.display         = 'none';
+
+    const setupEl = document.getElementById('view-setup');
+    const entryEl = document.getElementById('view-entry');
+    if (view === 'setup') {
+      setupEl.classList.remove('hidden');
+      entryEl.classList.add('hidden');
+      setTimeout(() => document.getElementById('pc-setup-1').focus(), 200);
+    } else {
+      setupEl.classList.add('hidden');
+      entryEl.classList.remove('hidden');
+      setTimeout(() => document.getElementById('pc-entry').focus(), 200);
+    }
+  }
+
+  function showApp() {
+    document.getElementById('lock-screen').style.display = 'none';
+    document.getElementById('app').style.display         = '';
+    loadData();
+    render();
+  }
+
+  async function setupPasscode() {
+    const code1 = document.getElementById('pc-setup-1').value;
+    const code2 = document.getElementById('pc-setup-2').value;
+    const err   = document.getElementById('setup-error');
+
+    if (!/^\d{4,8}$/.test(code1)) {
+      err.textContent = '4〜8桁の数字を入力してください';
+      shakeInput('pc-setup-1');
+      return;
+    }
+    if (code1 !== code2) {
+      err.textContent = 'パスコードが一致しません';
+      document.getElementById('pc-setup-2').value = '';
+      shakeInput('pc-setup-2');
+      return;
+    }
+    err.textContent = '';
+
+    const hash = await hashPasscode(code1);
+    localStorage.setItem(PC_HASH_KEY, hash);
+    sessionStorage.setItem(PC_AUTH_KEY, '1');
+    showApp();
+  }
+
+  async function verifyPasscode() {
+    const code       = document.getElementById('pc-entry').value;
+    const storedHash = localStorage.getItem(PC_HASH_KEY);
+    const err        = document.getElementById('entry-error');
+
+    if (!code) {
+      err.textContent = 'パスコードを入力してください';
+      return;
+    }
+    const hash = await hashPasscode(code);
+    if (hash === storedHash) {
+      err.textContent = '';
+      sessionStorage.setItem(PC_AUTH_KEY, '1');
+      showApp();
+    } else {
+      err.textContent = 'パスコードが正しくありません';
+      document.getElementById('pc-entry').value = '';
+      shakeInput('pc-entry');
+    }
+  }
+
+  function shakeInput(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('pc-shake');
+    void el.offsetWidth; // アニメーション再起動のためのリフロー強制
+    el.classList.add('pc-shake');
+    el.addEventListener('animationend', () => el.classList.remove('pc-shake'), { once: true });
+  }
+
+  function logout() {
+    sessionStorage.removeItem(PC_AUTH_KEY);
+    document.getElementById('pc-entry').value   = '';
+    document.getElementById('entry-error').textContent = '';
+    showLockView('entry');
+  }
+
+  // ===== App State =====
+  let stores       = [];
+  let editingId    = null;
+  let medalMode    = null;   // 'add' | 'sub' | 'set'
+  let medalStoreId = null;
+  let _scrollY     = 0;
+  const openDetails = new Set();
+
+  // ===== Storage =====
+  // クラウド同期を追加する場合はこの2関数を差し替える
+  const STORAGE_KEY = 'medal_stores_v1';
+
+  function persist() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(stores));
+  }
+
+  function loadData() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) stores = JSON.parse(raw);
+    } catch {
+      stores = [];
+    }
+  }
+
+  // ===== Utils =====
+  function uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  }
+
+  function todayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())}`;
+  }
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function calcCash(medals, exRate) {
+    if (!exRate || exRate <= 0 || medals == null) return null;
+    return Math.round(medals / exRate * 1000);
+  }
+
+  function fmt(n) { return Number(n).toLocaleString('ja-JP'); }
+
+  function esc(s) {
+    return String(s ?? '')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ===== Render =====
+  function render() {
+    document.getElementById('header-count').textContent =
+      stores.length ? `${stores.length}店舗` : '';
+
+    let totMedals = 0, totCash = 0, hasCash = false;
+    stores.forEach(s => {
+      totMedals += s.medals || 0;
+      const c = calcCash(s.medals, s.exchangeRate);
+      if (c !== null) { totCash += c; hasCash = true; }
+    });
+    document.getElementById('total-medals').textContent = fmt(totMedals) + '枚';
+    document.getElementById('total-cash').textContent =
+      hasCash ? '約' + fmt(totCash) + '円' : '—';
+
+    const el = document.getElementById('store-list');
+
+    if (!stores.length) {
+      el.innerHTML = `
+        <div class="empty">
+          <div class="e-icon">🎰</div>
+          <p>まだ店舗が登録されていません</p>
+          <p class="sub">上のボタンから追加してください</p>
+        </div>`;
+      return;
+    }
+
+    el.innerHTML = stores.map(s => {
+      const cash    = calcCash(s.medals, s.exchangeRate);
+      const cashHtml = cash !== null
+        ? `<div class="card-cashout">💴 換金目安 約${fmt(cash)}円</div>`
+        : '';
+
+      const briefLines = [];
+      if (s.lastUsage) briefLines.push(`<span class="brief-key">最終利用</span>${esc(s.lastUsage)}`);
+      if (s.memo) {
+        const short = s.memo.length > 28 ? s.memo.slice(0, 28) + '…' : s.memo;
+        briefLines.push(`📝 ${esc(short)}`);
+      }
+      const briefHtml = briefLines.length
+        ? `<div class="card-brief">${briefLines.join('<br>')}</div>`
+        : `<div style="height:4px"></div>`;
+
+      const dRows = [];
+      if (s.lendRate)     dRows.push(`<span class="dk">貸出</span>1,000円 → ${esc(s.lendRate)}枚`);
+      if (s.exchangeRate) dRows.push(`<span class="dk">交換</span>1,000円に ${s.exchangeRate}枚`);
+      if (s.replayLimit)  dRows.push(`<span class="dk">再プレイ上限</span>${esc(s.replayLimit)}`);
+      if (s.lastUpdated)  dRows.push(`<span class="dk">最終更新</span>${esc(s.lastUpdated)}`);
+      if (s.memo && s.memo.length > 28) dRows.push(`<span class="dk">メモ全文</span>${esc(s.memo)}`);
+      const detailContent = dRows.length
+        ? `<div class="detail-rows">${dRows.map(r => `<div>${r}</div>`).join('')}</div>`
+        : `<div style="font-size:13px;color:#ccc;margin-bottom:14px">（詳細情報なし）</div>`;
+
+      const isOpen = openDetails.has(s.id);
+
+      return `
+        <div class="store-card" id="card-${s.id}">
+          <div class="card-main">
+            <div class="card-name">${esc(s.name)}</div>
+            <div class="card-medal-row">
+              <span class="card-medals">${fmt(s.medals)}</span>
+              <span class="card-medals-unit">枚</span>
+            </div>
+            ${cashHtml}
+          </div>
+
+          ${briefHtml}
+
+          <div class="card-actions">
+            <button class="act-btn plus"  onclick="openMedalModal('${s.id}','add')">
+              <span class="act-icon">＋</span>
+              <span class="act-label">増やす</span>
+            </button>
+            <button class="act-btn minus" onclick="openMedalModal('${s.id}','sub')">
+              <span class="act-icon">－</span>
+              <span class="act-label">減らす</span>
+            </button>
+            <button class="act-btn setv"  onclick="openMedalModal('${s.id}','set')">
+              <span class="act-icon">✏️</span>
+              <span class="act-label">直接修正</span>
+            </button>
+          </div>
+
+          <div class="card-toggle-row" onclick="toggleDetail('${s.id}')">
+            <span id="tl-${s.id}">${isOpen ? '詳細を閉じる' : '詳細・編集'}</span>
+            <span class="toggle-chevron ${isOpen ? 'open' : ''}" id="tc-${s.id}">▼</span>
+          </div>
+
+          <div class="card-detail ${isOpen ? 'open' : ''}" id="cd-${s.id}">
+            ${detailContent}
+            <div class="sub-btns">
+              <button class="sub-btn sub-btn-edit"   onclick="openStoreModal('${s.id}')">店舗情報を編集</button>
+              <button class="sub-btn sub-btn-delete" onclick="deleteStore('${s.id}')">削除</button>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // ===== Detail toggle =====
+  function toggleDetail(id) {
+    openDetails.has(id) ? openDetails.delete(id) : openDetails.add(id);
+    const isOpen = openDetails.has(id);
+    document.getElementById('cd-' + id)?.classList.toggle('open', isOpen);
+    const chevron = document.getElementById('tc-' + id);
+    if (chevron) chevron.classList.toggle('open', isOpen);
+    const label = document.getElementById('tl-' + id);
+    if (label) label.textContent = isOpen ? '詳細を閉じる' : '詳細・編集';
+  }
+
+  // ===== Modal =====
+  function openModal(id) {
+    _scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top      = `-${_scrollY}px`;
+    document.body.style.width    = '100%';
+    document.getElementById(id).classList.add('open');
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+    document.body.style.position = '';
+    document.body.style.top      = '';
+    document.body.style.width    = '';
+    window.scrollTo(0, _scrollY);
+  }
+
+  function overlayClick(e, id) {
+    if (e.target === document.getElementById(id)) closeModal(id);
+  }
+
+  // ===== 店舗追加 / 編集 =====
+  function openStoreModal(id) {
+    editingId = id;
+    const isEdit = !!id;
+    const store  = isEdit ? stores.find(s => s.id === id) : null;
+
+    document.getElementById('store-modal-title').textContent =
+      isEdit ? '店舗情報を編集' : '店舗を追加';
+    document.getElementById('sf-medals-label').textContent =
+      isEdit ? '現在のメダル枚数' : '初期メダル枚数';
+
+    document.getElementById('sf-name').value     = store?.name ?? '';
+    document.getElementById('sf-medals').value   = store != null ? store.medals : '';
+    document.getElementById('sf-lend').value     = store?.lendRate ?? '';
+    document.getElementById('sf-exchange').value = store?.exchangeRate ?? '';
+    document.getElementById('sf-replay').value   = store?.replayLimit ?? '';
+    document.getElementById('sf-memo').value     = store?.memo ?? '';
+
+    openModal('store-modal');
+  }
+
+  function saveStore() {
+    const name = document.getElementById('sf-name').value.trim();
+    if (!name) { alert('店名を入力してください'); return; }
+
+    const medals       = Math.max(0, parseInt(document.getElementById('sf-medals').value) || 0);
+    const lendRate     = document.getElementById('sf-lend').value.trim();
+    const exchangeRate = parseFloat(document.getElementById('sf-exchange').value) || null;
+    const replayLimit  = document.getElementById('sf-replay').value.trim();
+    const memo         = document.getElementById('sf-memo').value.trim();
+
+    if (editingId) {
+      const s = stores.find(s => s.id === editingId);
+      if (s) {
+        s.name = name; s.medals = medals; s.lendRate = lendRate;
+        s.exchangeRate = exchangeRate; s.replayLimit = replayLimit;
+        s.memo = memo; s.lastUpdated = todayStr();
+      }
+    } else {
+      stores.push({
+        id: uid(), name, medals, lendRate, exchangeRate, replayLimit, memo,
+        lastUpdated: medals > 0 ? todayStr() : '',
+        lastUsage: ''
+      });
+    }
+
+    persist();
+    closeModal('store-modal');
+    render();
+  }
+
+  function deleteStore(id) {
+    const s = stores.find(s => s.id === id);
+    if (!s) return;
+    if (!confirm(`「${s.name}」を削除しますか？\nこの操作は元に戻せません。`)) return;
+    openDetails.delete(id);
+    stores = stores.filter(s => s.id !== id);
+    persist();
+    render();
+  }
+
+  // ===== メダル更新 =====
+  function openMedalModal(id, mode) {
+    const s = stores.find(s => s.id === id);
+    if (!s) return;
+    medalMode = mode; medalStoreId = id;
+
+    const titles = { add: 'メダルを増やす', sub: 'メダルを減らす', set: '枚数を直接修正' };
+    const labels = { add: '追加する枚数',   sub: '減らす枚数',     set: '修正後の枚数'   };
+
+    document.getElementById('medal-modal-title').textContent = titles[mode];
+    document.getElementById('mf-amount-label').textContent   = labels[mode];
+    document.getElementById('mc-current').textContent        = fmt(s.medals) + '枚';
+    document.getElementById('mf-amount').value               = mode === 'set' ? s.medals : '';
+    document.getElementById('mf-memo').value                 = '';
+
+    openModal('medal-modal');
+    setTimeout(() => document.getElementById('mf-amount').focus(), 200);
+  }
+
+  function updateMedals() {
+    const amount = parseFloat(document.getElementById('mf-amount').value);
+    if (isNaN(amount) || amount < 0) {
+      alert('枚数を正しく入力してください（0以上の数値）');
+      return;
+    }
+    const memo = document.getElementById('mf-memo').value.trim();
+    const s    = stores.find(s => s.id === medalStoreId);
+    if (!s) return;
+
+    if      (medalMode === 'add') s.medals = (s.medals || 0) + Math.round(amount);
+    else if (medalMode === 'sub') s.medals = Math.max(0, (s.medals || 0) - Math.round(amount));
+    else                          s.medals = Math.round(amount);
+
+    s.lastUpdated = todayStr();
+    if (memo) s.lastUsage = memo;
+
+    persist();
+    closeModal('medal-modal');
+    render();
+
+    setTimeout(() => {
+      const card = document.getElementById('card-' + s.id);
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 80);
+  }
+
+  // ===== Enter key =====
+  document.getElementById('pc-setup-2').addEventListener('keydown', e => {
+    if (e.key === 'Enter') setupPasscode();
+  });
+  document.getElementById('pc-entry').addEventListener('keydown', e => {
+    if (e.key === 'Enter') verifyPasscode();
+  });
+  document.getElementById('mf-amount').addEventListener('keydown', e => {
+    if (e.key === 'Enter') updateMedals();
+  });
+  document.getElementById('mf-memo').addEventListener('keydown', e => {
+    if (e.key === 'Enter') updateMedals();
+  });
+
+  // ===== Init =====
+  initAuth();
+</script>
+</body>
+</html>

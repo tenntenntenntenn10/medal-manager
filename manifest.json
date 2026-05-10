@@ -1,0 +1,11 @@
+{
+  "name": "貯メダル管理",
+  "short_name": "貯メダル",
+  "description": "店舗ごとの貯メダル枚数を管理するアプリ",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f0f2f5",
+  "theme_color": "#1a1a2e",
+  "lang": "ja",
+  "orientation": "portrait"
+}
