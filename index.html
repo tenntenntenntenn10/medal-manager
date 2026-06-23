@@ -193,16 +193,23 @@
       background: #16213e;
       color: white;
       border-radius: 14px;
-      padding: 14px 16px;
+      padding: 10px 16px;
       margin-bottom: 14px;
+    }
+    .total-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding: 8px 0;
+    }
+    .total-row + .total-row {
+      border-top: 1px solid rgba(255,255,255,0.1);
     }
     .t-label { font-size: 11px; opacity: 0.55; margin-bottom: 2px; }
-    .t-val-large { font-size: 26px; font-weight: 800; }
+    .t-val-large { font-size: 24px; font-weight: 800; }
+    .t-val-pac   { font-size: 20px; font-weight: 800; color: #7ab8f5; }
     .t-val-right { text-align: right; }
-    .t-val-small { font-size: 16px; font-weight: 700; }
+    .t-val-small { font-size: 15px; font-weight: 700; }
 
     /* ===== 店舗カード ===== */
     .store-card {
@@ -213,15 +220,29 @@
       overflow: hidden;
     }
 
-    .card-main { padding: 18px 16px 12px; }
+    /* --- スロットセクション --- */
+    .card-main { padding: 16px 16px 12px; }
 
     .card-name {
       font-size: 15px;
       font-weight: 700;
       color: #555;
-      margin-bottom: 4px;
+      margin-bottom: 8px;
       word-break: break-all;
     }
+
+    /* 種別タグ（スロット / パチンコ） */
+    .card-type-tag {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 5px;
+      display: inline-block;
+      margin-bottom: 6px;
+      letter-spacing: 0.3px;
+    }
+    .slot-tag { background: #fff0f3; color: #e94560; }
+    .pac-tag  { background: #e8f0fe; color: #1565c0; }
 
     .card-medal-row {
       display: flex;
@@ -230,15 +251,16 @@
       margin-bottom: 8px;
     }
     .card-medals {
-      font-size: 54px;
+      font-size: 48px;
       font-weight: 800;
       color: #e94560;
       line-height: 1;
       font-variant-numeric: tabular-nums;
       letter-spacing: -1px;
     }
+    .card-medals.pac-color { color: #1565c0; }
     .card-medals-unit {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 600;
       color: #ddd;
     }
@@ -251,13 +273,69 @@
       border: 1.5px solid #fde68a;
       border-radius: 8px;
       padding: 5px 10px;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       color: #92400e;
     }
+    .card-cashout.pac-cashout {
+      background: #eff5ff;
+      border-color: #bbd3f5;
+      color: #1a4b8c;
+    }
 
+    /* --- パチンコセクション --- */
+    .card-pac-main {
+      padding: 14px 16px 12px;
+      background: #f5f8ff;
+      border-top: 1px solid #e5eaf5;
+    }
+
+    /* --- アクションボタン（共通） --- */
+    .card-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      border-top: 1px solid #f0f0f0;
+    }
+    .card-actions.pac-actions {
+      background: #f5f8ff;
+      border-top: 1px solid #e5eaf5;
+    }
+
+    .act-btn {
+      padding: 13px 6px;
+      border: none;
+      border-right: 1px solid #f0f0f0;
+      background: white;
+      font-weight: 700;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      min-height: 64px;
+      justify-content: center;
+    }
+    .pac-actions .act-btn {
+      background: #f5f8ff;
+      border-right-color: #e5eaf5;
+    }
+    .act-btn:last-child { border-right: none; }
+    .act-btn:active { background: #f0f0f0; }
+    .pac-actions .act-btn:active { background: #e0e8ff; }
+    .act-icon  { font-size: 20px; line-height: 1; }
+    .act-label { font-size: 11px; }
+
+    /* スロットボタン */
+    .act-btn.plus  { color: #2e7d32; }
+    .act-btn.minus { color: #c62828; }
+    .act-btn.setv  { color: #1565c0; }
+    /* パチンコボタン */
+    .act-btn.pac-plus  { color: #1565c0; }
+    .act-btn.pac-minus { color: #6a1b9a; }
+    .act-btn.pac-setv  { color: #00695c; }
+
+    /* ===== 簡易情報 ===== */
     .card-brief {
-      padding: 0 16px 14px;
+      padding: 0 16px 12px;
       font-size: 13px;
       color: #888;
       line-height: 1.75;
@@ -270,35 +348,6 @@
       text-transform: uppercase;
       margin-right: 4px;
     }
-
-    /* ===== メインアクションボタン ===== */
-    .card-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      border-top: 1px solid #f3f3f3;
-    }
-
-    .act-btn {
-      padding: 14px 6px;
-      border: none;
-      border-right: 1px solid #f3f3f3;
-      background: white;
-      font-weight: 700;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
-      min-height: 68px;
-      justify-content: center;
-    }
-    .act-btn:last-child { border-right: none; }
-    .act-btn:active { background: #f5f5f5; }
-    .act-icon  { font-size: 22px; line-height: 1; }
-    .act-label { font-size: 12px; }
-
-    .act-btn.plus  { color: #2e7d32; }
-    .act-btn.minus { color: #c62828; }
-    .act-btn.setv  { color: #1565c0; }
 
     /* ===== 詳細トグル ===== */
     .card-toggle-row {
@@ -432,6 +481,27 @@
 
     .form-hint { font-size: 12px; color: #ccc; margin-top: 5px; }
 
+    /* フォームセクション区切り */
+    .form-section-sep {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 6px 0 16px;
+    }
+    .form-section-sep::before,
+    .form-section-sep::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #f0f0f0;
+    }
+    .form-section-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #999;
+      white-space: nowrap;
+    }
+
     .mc-box {
       background: #fff0f3;
       border-radius: 12px;
@@ -441,8 +511,13 @@
       align-items: center;
       justify-content: space-between;
     }
+    .mc-box.pac-box {
+      background: #eff5ff;
+    }
     .mc-label { font-size: 12px; color: #f4879a; font-weight: 700; margin-bottom: 2px; }
+    .mc-box.pac-box .mc-label { color: #5b8fe8; }
     .mc-value { font-size: 38px; font-weight: 800; color: #e94560; line-height: 1; }
+    .mc-box.pac-box .mc-value { color: #1565c0; }
 
     .modal-btns {
       display: flex;
@@ -547,13 +622,25 @@
     <button class="btn-add-store" onclick="openStoreModal(null)">＋ 新しい店舗を追加</button>
 
     <div class="total-bar">
-      <div>
-        <div class="t-label">全店舗 合計メダル</div>
-        <div class="t-val-large" id="total-medals">0枚</div>
+      <div class="total-row">
+        <div>
+          <div class="t-label">🎰 スロット 合計</div>
+          <div class="t-val-large" id="total-medals">0枚</div>
+        </div>
+        <div class="t-val-right">
+          <div class="t-label">換金目安</div>
+          <div class="t-val-small" id="total-cash">—</div>
+        </div>
       </div>
-      <div class="t-val-right">
-        <div class="t-label">換金目安合計</div>
-        <div class="t-val-small" id="total-cash">—</div>
+      <div class="total-row">
+        <div>
+          <div class="t-label">🎳 パチンコ 合計</div>
+          <div class="t-val-pac" id="total-pachinko">0玉</div>
+        </div>
+        <div class="t-val-right">
+          <div class="t-label">換金目安</div>
+          <div class="t-val-small" id="total-pachinko-cash">—</div>
+        </div>
       </div>
     </div>
 
@@ -573,6 +660,12 @@
         <label>店名（必須）</label>
         <input type="text" id="sf-name" placeholder="例：マルハン〇〇店" autocomplete="off">
       </div>
+
+      <!-- スロットセクション -->
+      <div class="form-section-sep">
+        <span class="form-section-label">🎰 スロット</span>
+      </div>
+
       <div class="form-group">
         <label id="sf-medals-label">初期メダル枚数</label>
         <input type="number" id="sf-medals" placeholder="0" min="0"
@@ -594,6 +687,39 @@
         <label>再プレイ上限</label>
         <input type="text" id="sf-replay" placeholder="例：460枚 / 無制限">
       </div>
+
+      <!-- パチンコセクション -->
+      <div class="form-section-sep">
+        <span class="form-section-label">🎳 パチンコ</span>
+      </div>
+
+      <div class="form-group">
+        <label id="sf-pachinko-label">初期玉数</label>
+        <input type="number" id="sf-pachinko-tama" placeholder="0" min="0"
+               inputmode="numeric" pattern="[0-9]*">
+      </div>
+      <div class="form-group">
+        <label>貸出玉数（1,000円で何玉）</label>
+        <input type="number" id="sf-pachinko-lend" placeholder="例：250" min="0" step="0.1"
+               inputmode="decimal">
+        <div class="form-hint">1,000円で何玉借りられるか</div>
+      </div>
+      <div class="form-group">
+        <label>交換玉数（1,000円に何玉必要）</label>
+        <input type="number" id="sf-pachinko-exchange" placeholder="例：285" min="0" step="0.1"
+               inputmode="decimal">
+        <div class="form-hint">換金目安の自動計算に使用します</div>
+      </div>
+      <div class="form-group">
+        <label>再プレイ上限</label>
+        <input type="text" id="sf-pachinko-replay" placeholder="例：250玉 / 無制限">
+      </div>
+
+      <!-- 共通メモ -->
+      <div class="form-section-sep">
+        <span class="form-section-label">共通</span>
+      </div>
+
       <div class="form-group">
         <label>メモ</label>
         <textarea id="sf-memo" placeholder="例：ジャグラー強め / 青い会員カード"></textarea>
@@ -607,19 +733,19 @@
   </div>
 </div>
 
-<!-- ===== メダル更新モーダル ===== -->
+<!-- ===== メダル / 玉 更新モーダル ===== -->
 <div class="overlay" id="medal-modal" onclick="overlayClick(event,'medal-modal')">
   <div class="modal">
     <div class="modal-drag"></div>
     <div class="modal-body">
       <div class="modal-title" id="medal-modal-title">メダルを増やす</div>
 
-      <div class="mc-box">
+      <div class="mc-box" id="mc-box">
         <div>
-          <div class="mc-label">現在の枚数</div>
+          <div class="mc-label" id="mc-current-label">現在のメダル枚数</div>
           <div class="mc-value" id="mc-current">0枚</div>
         </div>
-        <span style="font-size:32px">🎰</span>
+        <span id="mc-emoji" style="font-size:32px">🎰</span>
       </div>
 
       <div class="form-group">
@@ -648,17 +774,13 @@
   // 認証状態をsessionStorageで管理しています。
   // 本格的なサーバーサイド認証ではなく、端末内のデータを
   // 完全に保護するものではありません。
-  // ソースコードやlocalStorageに直接アクセスできる環境では
-  // 突破される可能性があります。
   // ====================================================================
 
   // ===== Passcode constants =====
   const PC_HASH_KEY = 'medal_pc_hash';
   const PC_AUTH_KEY = 'medal_authed';
-  const PC_SALT     = 'medal-lock-app-v1'; // ハッシュ強化用の固定ソルト
+  const PC_SALT     = 'medal-lock-app-v1';
 
-  // パスコードをSHA-256でハッシュ化（Web Crypto API）
-  // GitHub Pages (HTTPS) では常に利用可能
   async function hashPasscode(code) {
     if (crypto?.subtle) {
       const data = new TextEncoder().encode(code + PC_SALT);
@@ -666,14 +788,12 @@
       return Array.from(new Uint8Array(buf))
         .map(b => b.toString(16).padStart(2, '0')).join('');
     }
-    // file:// 等の非セキュアコンテキスト向けフォールバック
     return 'v0:' + [...(code + PC_SALT)]
       .reduce((h, c) => (Math.imul(31, h) + c.charCodeAt(0)) | 0, 0)
       .toString(16);
   }
 
   // ===== Auth flow =====
-  // async にしない：await を使わないため、同期関数で十分
   function initAuth() {
     try {
       const hash = localStorage.getItem(PC_HASH_KEY);
@@ -685,7 +805,6 @@
         showLockView('entry');
       }
     } catch (e) {
-      // localStorage が使えない環境（プライベートブラウズ制限など）への対応
       console.error('[medal-app] initAuth error:', e);
       showLockView('setup');
     }
@@ -710,8 +829,6 @@
 
   function showApp() {
     document.getElementById('lock-screen').style.display = 'none';
-    // ★ 修正: '' にすると CSS の #app { display:none } が復活して白画面になる
-    //         必ず 'block' を明示する
     document.getElementById('app').style.display = 'block';
     try {
       loadData();
@@ -770,7 +887,7 @@
     const el = document.getElementById(id);
     if (!el) return;
     el.classList.remove('pc-shake');
-    void el.offsetWidth; // アニメーション再起動のためのリフロー強制
+    void el.offsetWidth;
     el.classList.add('pc-shake');
     el.addEventListener('animationend', () => el.classList.remove('pc-shake'), { once: true });
   }
@@ -787,11 +904,11 @@
   let editingId    = null;
   let medalMode    = null;   // 'add' | 'sub' | 'set'
   let medalStoreId = null;
+  let medalType    = 'slot'; // 'slot' | 'pachinko'
   let _scrollY     = 0;
   const openDetails = new Set();
 
   // ===== Storage =====
-  // クラウド同期を追加する場合はこの2関数を差し替える
   const STORAGE_KEY = 'medal_stores_v1';
 
   function persist() {
@@ -818,9 +935,9 @@
   }
   function pad(n) { return String(n).padStart(2, '0'); }
 
-  function calcCash(medals, exRate) {
-    if (!exRate || exRate <= 0 || medals == null) return null;
-    return Math.round(medals / exRate * 1000);
+  function calcCash(count, exRate) {
+    if (!exRate || exRate <= 0 || count == null) return null;
+    return Math.round(count / exRate * 1000);
   }
 
   function fmt(n) { return Number(n).toLocaleString('ja-JP'); }
@@ -836,15 +953,27 @@
     document.getElementById('header-count').textContent =
       stores.length ? `${stores.length}店舗` : '';
 
+    // 合計計算
     let totMedals = 0, totCash = 0, hasCash = false;
+    let totPachinko = 0, totPachinkoCash = 0, hasPachinkoCash = false;
     stores.forEach(s => {
       totMedals += s.medals || 0;
       const c = calcCash(s.medals, s.exchangeRate);
       if (c !== null) { totCash += c; hasCash = true; }
+
+      totPachinko += s.pachinkoTama || 0;
+      const pc = calcCash(s.pachinkoTama, s.pachinkoExRate);
+      if (pc !== null) { totPachinkoCash += pc; hasPachinkoCash = true; }
     });
-    document.getElementById('total-medals').textContent = fmt(totMedals) + '枚';
+
+    document.getElementById('total-medals').textContent =
+      fmt(totMedals) + '枚';
     document.getElementById('total-cash').textContent =
       hasCash ? '約' + fmt(totCash) + '円' : '—';
+    document.getElementById('total-pachinko').textContent =
+      fmt(totPachinko) + '玉';
+    document.getElementById('total-pachinko-cash').textContent =
+      hasPachinkoCash ? '約' + fmt(totPachinkoCash) + '円' : '—';
 
     const el = document.getElementById('store-list');
 
@@ -859,11 +988,19 @@
     }
 
     el.innerHTML = stores.map(s => {
-      const cash    = calcCash(s.medals, s.exchangeRate);
-      const cashHtml = cash !== null
-        ? `<div class="card-cashout">💴 換金目安 約${fmt(cash)}円</div>`
+      // スロット換金
+      const slotCash = calcCash(s.medals, s.exchangeRate);
+      const slotCashHtml = slotCash !== null
+        ? `<div class="card-cashout">💴 換金目安 約${fmt(slotCash)}円</div>`
         : '';
 
+      // パチンコ換金
+      const pachinkoCash = calcCash(s.pachinkoTama, s.pachinkoExRate);
+      const pachinkoCashHtml = pachinkoCash !== null
+        ? `<div class="card-cashout pac-cashout">💴 換金目安 約${fmt(pachinkoCash)}円</div>`
+        : '';
+
+      // 簡易情報
       const briefLines = [];
       if (s.lastUsage) briefLines.push(`<span class="brief-key">最終利用</span>${esc(s.lastUsage)}`);
       if (s.memo) {
@@ -874,12 +1011,17 @@
         ? `<div class="card-brief">${briefLines.join('<br>')}</div>`
         : `<div style="height:4px"></div>`;
 
+      // 詳細行
       const dRows = [];
-      if (s.lendRate)     dRows.push(`<span class="dk">貸出</span>1,000円 → ${esc(s.lendRate)}枚`);
-      if (s.exchangeRate) dRows.push(`<span class="dk">交換</span>1,000円に ${s.exchangeRate}枚`);
-      if (s.replayLimit)  dRows.push(`<span class="dk">再プレイ上限</span>${esc(s.replayLimit)}`);
-      if (s.lastUpdated)  dRows.push(`<span class="dk">最終更新</span>${esc(s.lastUpdated)}`);
+      if (s.lendRate)         dRows.push(`<span class="dk">🎰 貸出</span>1,000円 → ${esc(s.lendRate)}枚`);
+      if (s.exchangeRate)     dRows.push(`<span class="dk">🎰 交換</span>1,000円に ${s.exchangeRate}枚`);
+      if (s.replayLimit)      dRows.push(`<span class="dk">🎰 再プレイ</span>${esc(s.replayLimit)}`);
+      if (s.pachinkoLendRate) dRows.push(`<span class="dk">🎳 貸出</span>1,000円 → ${esc(s.pachinkoLendRate)}玉`);
+      if (s.pachinkoExRate)   dRows.push(`<span class="dk">🎳 交換</span>1,000円に ${s.pachinkoExRate}玉`);
+      if (s.pachinkoReplay)   dRows.push(`<span class="dk">🎳 再プレイ</span>${esc(s.pachinkoReplay)}`);
+      if (s.lastUpdated)      dRows.push(`<span class="dk">最終更新</span>${esc(s.lastUpdated)}`);
       if (s.memo && s.memo.length > 28) dRows.push(`<span class="dk">メモ全文</span>${esc(s.memo)}`);
+
       const detailContent = dRows.length
         ? `<div class="detail-rows">${dRows.map(r => `<div>${r}</div>`).join('')}</div>`
         : `<div style="font-size:13px;color:#ccc;margin-bottom:14px">（詳細情報なし）</div>`;
@@ -888,31 +1030,59 @@
 
       return `
         <div class="store-card" id="card-${s.id}">
+
+          <!-- スロットセクション -->
           <div class="card-main">
             <div class="card-name">${esc(s.name)}</div>
+            <div class="card-type-tag slot-tag">🎰 スロット</div>
             <div class="card-medal-row">
-              <span class="card-medals">${fmt(s.medals)}</span>
+              <span class="card-medals">${fmt(s.medals || 0)}</span>
               <span class="card-medals-unit">枚</span>
             </div>
-            ${cashHtml}
+            ${slotCashHtml}
           </div>
 
-          ${briefHtml}
-
           <div class="card-actions">
-            <button class="act-btn plus"  onclick="openMedalModal('${s.id}','add')">
+            <button class="act-btn plus"  onclick="openMedalModal('${s.id}','add','slot')">
               <span class="act-icon">＋</span>
               <span class="act-label">増やす</span>
             </button>
-            <button class="act-btn minus" onclick="openMedalModal('${s.id}','sub')">
+            <button class="act-btn minus" onclick="openMedalModal('${s.id}','sub','slot')">
               <span class="act-icon">－</span>
               <span class="act-label">減らす</span>
             </button>
-            <button class="act-btn setv"  onclick="openMedalModal('${s.id}','set')">
+            <button class="act-btn setv"  onclick="openMedalModal('${s.id}','set','slot')">
               <span class="act-icon">✏️</span>
               <span class="act-label">直接修正</span>
             </button>
           </div>
+
+          <!-- パチンコセクション -->
+          <div class="card-pac-main">
+            <div class="card-type-tag pac-tag">🎳 パチンコ</div>
+            <div class="card-medal-row">
+              <span class="card-medals pac-color">${fmt(s.pachinkoTama || 0)}</span>
+              <span class="card-medals-unit">玉</span>
+            </div>
+            ${pachinkoCashHtml}
+          </div>
+
+          <div class="card-actions pac-actions">
+            <button class="act-btn pac-plus"  onclick="openMedalModal('${s.id}','add','pachinko')">
+              <span class="act-icon">＋</span>
+              <span class="act-label">増やす</span>
+            </button>
+            <button class="act-btn pac-minus" onclick="openMedalModal('${s.id}','sub','pachinko')">
+              <span class="act-icon">－</span>
+              <span class="act-label">減らす</span>
+            </button>
+            <button class="act-btn pac-setv"  onclick="openMedalModal('${s.id}','set','pachinko')">
+              <span class="act-icon">✏️</span>
+              <span class="act-label">直接修正</span>
+            </button>
+          </div>
+
+          ${briefHtml}
 
           <div class="card-toggle-row" onclick="toggleDetail('${s.id}')">
             <span id="tl-${s.id}">${isOpen ? '詳細を閉じる' : '詳細・編集'}</span>
@@ -926,6 +1096,7 @@
               <button class="sub-btn sub-btn-delete" onclick="deleteStore('${s.id}')">削除</button>
             </div>
           </div>
+
         </div>`;
     }).join('');
   }
@@ -972,13 +1143,24 @@
       isEdit ? '店舗情報を編集' : '店舗を追加';
     document.getElementById('sf-medals-label').textContent =
       isEdit ? '現在のメダル枚数' : '初期メダル枚数';
+    document.getElementById('sf-pachinko-label').textContent =
+      isEdit ? '現在の玉数' : '初期玉数';
 
+    // スロット
     document.getElementById('sf-name').value     = store?.name ?? '';
-    document.getElementById('sf-medals').value   = store != null ? store.medals : '';
+    document.getElementById('sf-medals').value   = store != null ? (store.medals ?? '') : '';
     document.getElementById('sf-lend').value     = store?.lendRate ?? '';
     document.getElementById('sf-exchange').value = store?.exchangeRate ?? '';
     document.getElementById('sf-replay').value   = store?.replayLimit ?? '';
-    document.getElementById('sf-memo').value     = store?.memo ?? '';
+
+    // パチンコ
+    document.getElementById('sf-pachinko-tama').value     = store != null ? (store.pachinkoTama ?? '') : '';
+    document.getElementById('sf-pachinko-lend').value     = store?.pachinkoLendRate ?? '';
+    document.getElementById('sf-pachinko-exchange').value = store?.pachinkoExRate ?? '';
+    document.getElementById('sf-pachinko-replay').value   = store?.pachinkoReplay ?? '';
+
+    // 共通
+    document.getElementById('sf-memo').value = store?.memo ?? '';
 
     openModal('store-modal');
   }
@@ -987,23 +1169,37 @@
     const name = document.getElementById('sf-name').value.trim();
     if (!name) { alert('店名を入力してください'); return; }
 
+    // スロット
     const medals       = Math.max(0, parseInt(document.getElementById('sf-medals').value) || 0);
     const lendRate     = document.getElementById('sf-lend').value.trim();
     const exchangeRate = parseFloat(document.getElementById('sf-exchange').value) || null;
     const replayLimit  = document.getElementById('sf-replay').value.trim();
-    const memo         = document.getElementById('sf-memo').value.trim();
+
+    // パチンコ
+    const pachinkoTama     = Math.max(0, parseInt(document.getElementById('sf-pachinko-tama').value) || 0);
+    const pachinkoLendRate = document.getElementById('sf-pachinko-lend').value.trim();
+    const pachinkoExRate   = parseFloat(document.getElementById('sf-pachinko-exchange').value) || null;
+    const pachinkoReplay   = document.getElementById('sf-pachinko-replay').value.trim();
+
+    // 共通
+    const memo = document.getElementById('sf-memo').value.trim();
 
     if (editingId) {
       const s = stores.find(s => s.id === editingId);
       if (s) {
         s.name = name; s.medals = medals; s.lendRate = lendRate;
         s.exchangeRate = exchangeRate; s.replayLimit = replayLimit;
+        s.pachinkoTama = pachinkoTama; s.pachinkoLendRate = pachinkoLendRate;
+        s.pachinkoExRate = pachinkoExRate; s.pachinkoReplay = pachinkoReplay;
         s.memo = memo; s.lastUpdated = todayStr();
       }
     } else {
       stores.push({
-        id: uid(), name, medals, lendRate, exchangeRate, replayLimit, memo,
-        lastUpdated: medals > 0 ? todayStr() : '',
+        id: uid(), name,
+        medals, lendRate, exchangeRate, replayLimit,
+        pachinkoTama, pachinkoLendRate, pachinkoExRate, pachinkoReplay,
+        memo,
+        lastUpdated: (medals > 0 || pachinkoTama > 0) ? todayStr() : '',
         lastUsage: ''
       });
     }
@@ -1023,20 +1219,37 @@
     render();
   }
 
-  // ===== メダル更新 =====
-  function openMedalModal(id, mode) {
+  // ===== メダル / 玉 更新 =====
+  function openMedalModal(id, mode, type) {
     const s = stores.find(s => s.id === id);
     if (!s) return;
-    medalMode = mode; medalStoreId = id;
+    medalMode = mode; medalStoreId = id; medalType = type || 'slot';
 
-    const titles = { add: 'メダルを増やす', sub: 'メダルを減らす', set: '枚数を直接修正' };
-    const labels = { add: '追加する枚数',   sub: '減らす枚数',     set: '修正後の枚数'   };
+    const isSlot = medalType === 'slot';
+    const unit   = isSlot ? '枚' : '玉';
+    const count  = isSlot ? (s.medals || 0) : (s.pachinkoTama || 0);
 
-    document.getElementById('medal-modal-title').textContent = titles[mode];
-    document.getElementById('mf-amount-label').textContent   = labels[mode];
-    document.getElementById('mc-current').textContent        = fmt(s.medals) + '枚';
-    document.getElementById('mf-amount').value               = mode === 'set' ? s.medals : '';
-    document.getElementById('mf-memo').value                 = '';
+    const titles = {
+      slot:     { add: 'メダルを増やす', sub: 'メダルを減らす', set: '枚数を直接修正' },
+      pachinko: { add: '玉を増やす',     sub: '玉を減らす',     set: '玉数を直接修正' }
+    };
+    const labels = {
+      slot:     { add: '追加する枚数', sub: '減らす枚数', set: '修正後の枚数' },
+      pachinko: { add: '追加する玉数', sub: '減らす玉数', set: '修正後の玉数' }
+    };
+
+    document.getElementById('medal-modal-title').textContent  = titles[medalType][mode];
+    document.getElementById('mf-amount-label').textContent    = labels[medalType][mode];
+    document.getElementById('mc-current-label').textContent   = isSlot ? '現在のメダル枚数' : '現在の玉数';
+    document.getElementById('mc-current').textContent         = fmt(count) + unit;
+    document.getElementById('mc-emoji').textContent           = isSlot ? '🎰' : '🎳';
+
+    const mcBox = document.getElementById('mc-box');
+    if (isSlot) { mcBox.classList.remove('pac-box'); }
+    else        { mcBox.classList.add('pac-box'); }
+
+    document.getElementById('mf-amount').value = mode === 'set' ? count : '';
+    document.getElementById('mf-memo').value   = '';
 
     openModal('medal-modal');
     setTimeout(() => document.getElementById('mf-amount').focus(), 200);
@@ -1048,13 +1261,16 @@
       alert('枚数を正しく入力してください（0以上の数値）');
       return;
     }
-    const memo = document.getElementById('mf-memo').value.trim();
-    const s    = stores.find(s => s.id === medalStoreId);
+    const memo  = document.getElementById('mf-memo').value.trim();
+    const s     = stores.find(s => s.id === medalStoreId);
     if (!s) return;
 
-    if      (medalMode === 'add') s.medals = (s.medals || 0) + Math.round(amount);
-    else if (medalMode === 'sub') s.medals = Math.max(0, (s.medals || 0) - Math.round(amount));
-    else                          s.medals = Math.round(amount);
+    // スロットかパチンコか
+    const field = medalType === 'slot' ? 'medals' : 'pachinkoTama';
+
+    if      (medalMode === 'add') s[field] = (s[field] || 0) + Math.round(amount);
+    else if (medalMode === 'sub') s[field] = Math.max(0, (s[field] || 0) - Math.round(amount));
+    else                          s[field] = Math.round(amount);
 
     s.lastUpdated = todayStr();
     if (memo) s.lastUsage = memo;
