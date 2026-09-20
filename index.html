@@ -558,6 +558,43 @@
     .empty .e-icon { font-size: 56px; margin-bottom: 14px; }
     .empty p { font-size: 15px; }
     .empty .sub { font-size: 13px; margin-top: 8px; color: #ddd; }
+
+    /* ===== バックアップ / 復元 ===== */
+    .backup-section {
+      margin-top: 22px;
+      padding: 16px;
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+    .backup-warning {
+      font-size: 12px;
+      color: #aaa;
+      line-height: 1.6;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .backup-btns {
+      display: flex;
+      gap: 8px;
+    }
+    .backup-btn {
+      flex: 1;
+      padding: 14px 6px;
+      border: none;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      min-height: 52px;
+      background: #ede7f6;
+      color: #4527a0;
+    }
+    .backup-btn:active { background: #ddd2f0; }
+    .backup-btn.restore {
+      background: #e8f0fe;
+      color: #1565c0;
+    }
+    .backup-btn.restore:active { background: #d5e5fc; }
   </style>
 </head>
 <body>
@@ -645,6 +682,18 @@
     </div>
 
     <div id="store-list"></div>
+
+    <div class="backup-section">
+      <div class="backup-warning">
+        ⚠️ Safariのサイトデータを削除すると保存データが消える場合があります。定期的にバックアップしてください。
+      </div>
+      <div class="backup-btns">
+        <button class="backup-btn" onclick="exportBackup()">📤 バックアップを書き出す</button>
+        <button class="backup-btn restore" onclick="triggerRestore()">📥 バックアップから復元</button>
+      </div>
+      <input type="file" id="restore-file-input" accept="application/json,.json"
+             style="display:none" onchange="handleRestoreFile(event)">
+    </div>
   </main>
 
 </div><!-- /#app -->
@@ -922,6 +971,120 @@
     } catch {
       stores = [];
     }
+  }
+
+  // ===== バックアップ書き出し =====
+  function dateStrForFile() {
+    const d = new Date();
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  }
+
+  function exportBackup() {
+    try {
+      const payload = {
+        app: 'medal-manager',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        stores: stores
+      };
+      const json = JSON.stringify(payload, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url  = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href     = url;
+      a.download = `medal-backup-${dateStrForFile()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (e) {
+      console.error('[medal-app] exportBackup error:', e);
+      alert('バックアップの書き出しに失敗しました。');
+    }
+  }
+
+  // ===== バックアップ復元 =====
+  function triggerRestore() {
+    document.getElementById('restore-file-input').click();
+  }
+
+  function isValidStoreShape(s) {
+    return !!s && typeof s === 'object' &&
+      typeof s.id === 'string' && s.id.length > 0 &&
+      typeof s.name === 'string';
+  }
+
+  // 壊れたファイル／別形式のファイルを弾くための検証
+  // 例外を投げるのではなく null を返し、呼び出し側でエラー文言を出し分ける
+  function parseBackupPayload(raw) {
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return null;
+    }
+
+    let list;
+    if (Array.isArray(parsed)) {
+      list = parsed;
+    } else if (parsed && Array.isArray(parsed.stores)) {
+      list = parsed.stores;
+    } else {
+      return null;
+    }
+
+    if (!list.every(isValidStoreShape)) return null;
+    return list;
+  }
+
+  function handleRestoreFile(event) {
+    const input = event.target;
+    const file  = input.files && input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const restoredStores = parseBackupPayload(reader.result);
+
+      if (!restoredStores) {
+        alert('復元に失敗しました。ファイルの形式が正しくないか、壊れている可能性があります。');
+        input.value = '';
+        return;
+      }
+
+      const ok = confirm(
+        `現在のデータを上書きします。よろしいですか？\n（読み込んだ店舗数: ${restoredStores.length}件）`
+      );
+      if (!ok) {
+        input.value = '';
+        return;
+      }
+
+      try {
+        stores = restoredStores;
+        persist();
+        openDetails.clear();
+        render();
+        alert('バックアップから復元しました。');
+      } catch (e) {
+        console.error('[medal-app] restore apply error:', e);
+        alert('復元中にエラーが発生しました。現在のデータは変更されていません。');
+        loadData();
+        render();
+      } finally {
+        input.value = '';
+      }
+    };
+
+    reader.onerror = () => {
+      console.error('[medal-app] restore file read error:', reader.error);
+      alert('ファイルの読み込みに失敗しました。');
+      input.value = '';
+    };
+
+    reader.readAsText(file);
   }
 
   // ===== Utils =====
